@@ -285,7 +285,10 @@ export const TransactionsView = ({
                           <td className="p-4 text-slate-400 font-mono text-xs">{index + 1}</td>
                           <td className={cn("p-4 font-bold", isDarkMode ? "text-slate-300" : "text-slate-700")}>{item.fecha}</td>
                           <td className={cn("p-4 font-medium", isDarkMode ? "text-slate-400" : "text-slate-600")}>{item.nombre_cliente}</td>
-                          <td className={cn("p-4 font-mono font-bold text-right", isDarkMode ? "text-slate-300" : "text-slate-700")}>
+                          <td className={cn(
+                            "p-4 font-mono font-bold text-right",
+                            isDarkMode ? "text-emerald-400" : "text-slate-700"
+                          )}>
                             {formatCurrency(item.valor)}
                           </td>
                           <td className="p-4 text-slate-500">
