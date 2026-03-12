@@ -139,7 +139,7 @@ export const TransactionsView = ({
       'NombreZH',
       'Link Soporte'
     ];
-    const rows = filteredData.map((item) => ([
+    const rows = filteredData.slice(0, pageSize).map((item) => ([
       item.fecha ?? '',
       item.descripcion ?? '',
       String(item.valor ?? ''),
