@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Search, 
   Download, 
@@ -75,6 +75,8 @@ export const TransactionsView = ({
   handleSaveConsignment,
   isSavingConsignment
 }: TransactionsViewProps) => {
+  const [isConsignmentModalOpen, setIsConsignmentModalOpen] = useState(false);
+
   const buildCsv = (headers: string[], rows: string[][], delimiter = ';') => {
     const escapeCell = (value: string) => {
       const needsQuotes = value.includes('"') || value.includes('\n') || value.includes('\r') || value.includes(delimiter);
@@ -205,74 +207,7 @@ export const TransactionsView = ({
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {activeTab === 'Proveedores' && (
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:w-80 flex-shrink-0"
-          >
-            <div className={cn("rounded-2xl shadow-sm border p-6 sticky top-24 transition-colors", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}>
-              <h3 className="text-lg font-bold text-[#0078D4] mb-6 flex items-center gap-2">
-                <FileText size={20} />
-                Formulario Consignaciones
-              </h3>
-              <form onSubmit={handleSaveConsignment} className="space-y-4">
-                <div>
-                  <input 
-                    type="text" 
-                    value={selectedBank.name.toLowerCase().replace('banco ', '')} 
-                    disabled 
-                    className={cn("w-full px-4 py-2 border rounded-xl text-sm font-medium transition-colors", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-500" : "bg-slate-50 border-slate-200 text-slate-400")}
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="date" 
-                    value={consignmentForm.fecha}
-                    onChange={(e) => setConsignmentForm(prev => ({ ...prev, fecha: e.target.value }))}
-                    className={cn("w-full px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] outline-none transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-200" : "bg-white border-slate-200 text-slate-900")}
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="text" 
-                    placeholder="Nombre del Cliente"
-                    value={consignmentForm.cliente}
-                    onChange={(e) => setConsignmentForm(prev => ({ ...prev, cliente: e.target.value }))}
-                    className={cn("w-full px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] outline-none transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500" : "bg-white border-slate-200 text-slate-900")}
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="text" 
-                    placeholder="Proveedor"
-                    value={consignmentForm.proveedor}
-                    onChange={(e) => setConsignmentForm(prev => ({ ...prev, proveedor: e.target.value }))}
-                    className={cn("w-full px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] outline-none transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500" : "bg-white border-slate-200 text-slate-900")}
-                  />
-                </div>
-                <div>
-                  <input 
-                    type="number" 
-                    placeholder="Valor Consignación"
-                    value={consignmentForm.valor}
-                    onChange={(e) => setConsignmentForm(prev => ({ ...prev, valor: e.target.value }))}
-                    className={cn("w-full px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] outline-none transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500" : "bg-white border-slate-200 text-slate-900")}
-                  />
-                </div>
-                <button 
-                  type="submit"
-                  disabled={isSavingConsignment}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {isSavingConsignment ? <Loader2 className="animate-spin" size={18} /> : 'Guardar'}
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
-
+      <div className="flex flex-col">
         <div className="flex-1 min-w-0">
           <div className={cn("rounded-2xl shadow-sm border overflow-hidden transition-colors", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}>
             <div className={cn("flex flex-col md:flex-row md:items-center justify-between p-4 border-b gap-4 transition-colors", isDarkMode ? "border-slate-700" : "border-slate-100")}>
@@ -293,6 +228,15 @@ export const TransactionsView = ({
                 ))}
               </div>
 
+              {activeTab === 'Proveedores' && (
+                <button
+                  onClick={() => setIsConsignmentModalOpen(true)}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"
+                >
+                  <FileText size={16} />
+                  Nueva consignacion
+                </button>
+              )}
               <div className="relative max-w-xs w-full">
                 <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input 
@@ -355,14 +299,23 @@ export const TransactionsView = ({
                               }}
                             />
                           </td>
-                          <td className="p-4 font-bold text-blue-600">{item.nombre_proveedor}</td>
-                          <td className="p-4 font-bold text-red-500">
+                          <td className={cn("p-4 font-bold", isDarkMode ? "text-blue-300" : "text-blue-500")}>{item.nombre_proveedor}</td>
+                          <td className={cn(
+                            "p-4 font-bold",
+                            item.Proveedor === 0 ? (isDarkMode ? "text-red-400" : "text-red-500") : (isDarkMode ? "text-slate-200" : "text-slate-800")
+                          )}>
                             {item.Proveedor === 0 ? 'XXXX' : item.Proveedor}
                           </td>
-                          <td className="p-4 font-bold text-red-500">
+                          <td className={cn(
+                            "p-4 font-bold",
+                            item.Numero === 0 ? (isDarkMode ? "text-red-400" : "text-red-500") : (isDarkMode ? "text-blue-300" : "text-blue-500")
+                          )}>
                             {item.Numero === 0 ? 'XXXX' : `${item.Prefijo}-${item.Numero}`}
                           </td>
-                          <td className="p-4 font-bold text-red-500">
+                          <td className={cn(
+                            "p-4 font-bold",
+                            item.Nombre === 0 ? (isDarkMode ? "text-red-400" : "text-red-500") : (isDarkMode ? "text-slate-200" : "text-slate-800")
+                          )}>
                             {item.Nombre === 0 ? 'XXXX' : item.Nombre}
                           </td>
                           <td className="p-4 text-center">
@@ -533,6 +486,112 @@ export const TransactionsView = ({
           </div>
         </div>
       </div>
-    </div>
+          {activeTab === 'Proveedores' && isConsignmentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setIsConsignmentModalOpen(false)}
+          />
+          <div className={cn("relative w-full max-w-lg mx-4 rounded-2xl shadow-xl border p-6", isDarkMode ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200")}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={cn("text-lg font-bold", isDarkMode ? "text-slate-100" : "text-slate-800")}>
+                Nueva consignacion
+              </h3>
+              <button
+                onClick={() => setIsConsignmentModalOpen(false)}
+                className={cn("p-2 rounded-lg transition-all", isDarkMode ? "text-slate-400 hover:bg-slate-800" : "text-slate-500 hover:bg-slate-100")}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                const hasMissing = !consignmentForm.fecha || !consignmentForm.cliente || !consignmentForm.proveedor || !consignmentForm.valor;
+                handleSaveConsignment(e);
+                if (!hasMissing) setIsConsignmentModalOpen(false);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className={cn("block text-xs font-bold uppercase tracking-widest mb-1", isDarkMode ? "text-slate-500" : "text-slate-500")}>
+                  Banco
+                </label>
+                <input 
+                  type="text" 
+                  value={selectedBank.name.toLowerCase().replace('banco ', '')} 
+                  disabled 
+                  className={cn("w-full px-4 py-2 border rounded-xl text-sm font-medium transition-colors", isDarkMode ? "bg-slate-800 border-slate-700 text-slate-500" : "bg-slate-50 border-slate-200 text-slate-400")}
+                />
+              </div>
+              <div>
+                <label className={cn("block text-xs font-bold uppercase tracking-widest mb-1", isDarkMode ? "text-slate-500" : "text-slate-500")}>
+                  Fecha
+                </label>
+                <input 
+                  type="date" 
+                  value={consignmentForm.fecha}
+                  onChange={(e) => setConsignmentForm(prev => ({ ...prev, fecha: e.target.value }))}
+                  className={cn("w-full px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] outline-none transition-all", isDarkMode ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-white border-slate-200 text-slate-900")}
+                />
+              </div>
+              <div>
+                <label className={cn("block text-xs font-bold uppercase tracking-widest mb-1", isDarkMode ? "text-slate-500" : "text-slate-500")}>
+                  Cliente
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="Nombre del Cliente"
+                  value={consignmentForm.cliente}
+                  onChange={(e) => setConsignmentForm(prev => ({ ...prev, cliente: e.target.value }))}
+                  className={cn("w-full px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] outline-none transition-all", isDarkMode ? "bg-slate-800 border-slate-700 text-slate-200 placeholder:text-slate-500" : "bg-white border-slate-200 text-slate-900")}
+                />
+              </div>
+              <div>
+                <label className={cn("block text-xs font-bold uppercase tracking-widest mb-1", isDarkMode ? "text-slate-500" : "text-slate-500")}>
+                  Proveedor
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="Proveedor"
+                  value={consignmentForm.proveedor}
+                  onChange={(e) => setConsignmentForm(prev => ({ ...prev, proveedor: e.target.value }))}
+                  className={cn("w-full px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] outline-none transition-all", isDarkMode ? "bg-slate-800 border-slate-700 text-slate-200 placeholder:text-slate-500" : "bg-white border-slate-200 text-slate-900")}
+                />
+              </div>
+              <div>
+                <label className={cn("block text-xs font-bold uppercase tracking-widest mb-1", isDarkMode ? "text-slate-500" : "text-slate-500")}>
+                  Valor
+                </label>
+                <input 
+                  type="number" 
+                  placeholder="Valor Consignacion"
+                  value={consignmentForm.valor}
+                  onChange={(e) => setConsignmentForm(prev => ({ ...prev, valor: e.target.value }))}
+                  className={cn("w-full px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] outline-none transition-all", isDarkMode ? "bg-slate-800 border-slate-700 text-slate-200 placeholder:text-slate-500" : "bg-white border-slate-200 text-slate-900")}
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsConsignmentModalOpen(false)}
+                  className={cn("flex-1 py-3 rounded-xl font-bold transition-all border", isDarkMode ? "border-slate-700 text-slate-300 hover:bg-slate-800" : "border-slate-200 text-slate-600 hover:bg-slate-50")}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSavingConsignment}
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isSavingConsignment ? <Loader2 className="animate-spin" size={18} /> : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+</div>
+
+
   );
 };

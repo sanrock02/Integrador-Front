@@ -59,7 +59,7 @@ export default function App() {
     setIsLoading(true);
     try {
       const data = await apiService.fetchTransactions(selectedBank, year);
-      setTransactions(data);
+      setTransactions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error loading transactions:", error);
     } finally {
@@ -71,7 +71,7 @@ export default function App() {
     setIsLoading(true);
     try {
       const data = await apiService.fetchConsignments(selectedBank, year);
-      setConsignments(data);
+      setConsignments(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error loading consignments:", error);
     } finally {
@@ -143,7 +143,7 @@ export default function App() {
   };
 
   const filteredData = useMemo(() => {
-    return transactions.filter(item => {
+    return (transactions || []).filter(item => {
       const globalMatch = Object.values(item).some(val => 
         String(val ?? '').toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -159,7 +159,7 @@ export default function App() {
   }, [transactions, searchTerm, columnFilters]);
 
   const filteredConsignments = useMemo(() => {
-    return consignments.filter(item => {
+    return (consignments || []).filter(item => {
       return Object.values(item).some(val => 
         String(val ?? '').toLowerCase().includes(searchTerm.toLowerCase())
       );

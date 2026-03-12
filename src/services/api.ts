@@ -31,7 +31,7 @@ export const apiService = {
     });
     if (!response.ok) throw new Error('Failed to fetch transactions');
     const data = await response.json();
-    return data.Registros_banco;
+    return Array.isArray(data.Registros_banco) ? data.Registros_banco : [];
   },
 
   
@@ -54,7 +54,7 @@ export const apiService = {
     });
     if (!response.ok) throw new Error('Failed to fetch consignments');
     const data = await response.json();
-    return data.proveedores;
+    return Array.isArray(data.proveedores) ? data.proveedores : [];
   },
 
   async saveConsignment(data: {
