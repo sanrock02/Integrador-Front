@@ -22,7 +22,9 @@ import { EditableCell } from '../components/EditableCell';
 
 interface TransactionsViewProps {
   isDarkMode: boolean;
+  bankAccounts: BankAccount[];
   selectedBank: BankAccount;
+  onBankSelect: (bank: BankAccount) => void;
   year: string;
   setYear: (year: string) => void;
   years: string[];
@@ -48,7 +50,9 @@ interface TransactionsViewProps {
 
 export const TransactionsView = ({
   isDarkMode,
+  bankAccounts,
   selectedBank,
+  onBankSelect,
   year,
   setYear,
   years,
@@ -162,6 +166,23 @@ export const TransactionsView = ({
         </div>
         
         <div className="flex items-center gap-3">
+          <div className="relative">
+            <select
+              value={selectedBank.id}
+              onChange={(e) => {
+                const next = bankAccounts.find(b => b.id === e.target.value);
+                if (next) onBankSelect(next);
+              }}
+              className={cn("appearance-none border pl-4 pr-10 py-2 rounded-xl text-sm font-bold focus:ring-2 focus:ring-[#0078D4] focus:border-transparent outline-none cursor-pointer shadow-sm transition-all", isDarkMode ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-white border-slate-200 text-slate-700")}
+            >
+              {bankAccounts.map(bank => (
+                <option key={bank.id} value={bank.id}>
+                  {bank.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
           <div className="relative">
             <select 
               value={year}

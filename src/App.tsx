@@ -293,7 +293,9 @@ export default function App() {
               {currentView === 'transactions' && (
                 <TransactionsView 
                   isDarkMode={isDarkMode}
+                  bankAccounts={BANK_ACCOUNTS}
                   selectedBank={selectedBank}
+                  onBankSelect={handleBankSelect}
                   year={year}
                   setYear={setYear}
                   years={years}
