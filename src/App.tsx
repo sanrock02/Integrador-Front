@@ -6,7 +6,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { BANK_ACCOUNTS } from './mockData';
-import { BankTransaction, TabType, ViewType, BankAccount, Consignment } from './types';
+import { BankTransaction, TabType, ViewType, BankAccount, Consignment, Pedido } from './types';
 import { apiService } from './services/api';
 import { cn } from './utils/cn';
 import { formatCurrency } from './utils/format';
@@ -188,7 +188,7 @@ export default function App() {
   const [activos, setActivos] = useState<any[]>([]);
   const [resoluciones, setResoluciones] = useState<any[]>([]);
   const [packing, setPacking] = useState<any[]>([]);
-  const [pedidos, setPedidos] = useState<any[]>([]);
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [cruceFacturas, setCruceFacturas] = useState<any[]>([]);
 
   useEffect(() => {
@@ -358,6 +358,7 @@ export default function App() {
                 <PedidosView 
                   isDarkMode={isDarkMode}
                   pedidos={pedidos}
+                  setPedidos={setPedidos}
                 />
               )}
               {currentView === 'cruce-facturas' && (

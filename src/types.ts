@@ -111,13 +111,20 @@ export interface RegistroPacking {
 }
 
 export interface Pedido {
+  id: number;
+  fecha: string;
+  bodega: string;
   prefijo: string;
   numero: string;
-  fecha_pedido: string;
+  cliente: string;
+  usuario_pedido: string;
+  picking: string;
+  venta: string;
+  empaque: string;
   fecha_entrega: string;
+  cumplimiento: string;
   detalle_cumplimiento: string;
   estado: string;
-  usuario: string;
   enviado: boolean;
 }
 

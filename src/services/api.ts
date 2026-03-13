@@ -3,7 +3,10 @@ import { BankTransaction, Consignment, BankAccount } from '../types';
 const BASE_URL = 'http://192.168.1.66:3000';
 
 const getCsrfToken = () => {
-  return (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
+  const meta = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content;
+  if (meta) return meta;
+  const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
 };
 
 export const apiService = {
@@ -201,7 +204,56 @@ export const apiService = {
   async fetchPedidos(): Promise<any[]> {
     const response = await fetch(`${BASE_URL}/app/list_pedidos_saanye/`, { credentials: 'include' });
     const data = await this.handleResponse(response, 'pedidos');
-    return data.pedidos || [];
+    const raw = data.pedidos || data.Pedidos || data.Registros_Pedidos || data.registros || data.data || data.results || [];
+    if (!Array.isArray(raw)) return [];
+    return raw.map((item: any, index: number) => ({
+      id: Number(item.id ?? item.ID ?? index + 1),
+      fecha: item.fecha ?? item.Fecha ?? '',
+      bodega: item.bodega ?? item.Bodega ?? '',
+      prefijo: item.prefijo ?? item.Prefijo ?? '',
+      numero: String(item.numero ?? item.Numero ?? ''),
+      cliente: item.cliente ?? item.Cliente ?? '',
+      usuario_pedido: item.usuario_pedido ?? item.Usuario_Pedido ?? item.usuario ?? item.Usuario ?? '',
+      picking: item.picking ?? item.Picking ?? '',
+      venta: item.venta ?? item.Venta ?? '',
+      empaque: item.empaque ?? item.Empaque ?? '',
+      fecha_entrega: item.fecha_entrega ?? item.Fecha_Entrega ?? '',
+      cumplimiento: item.cumplimiento ?? item.Cumplimiento ?? '',
+      detalle_cumplimiento: item.detalle_cumplimiento ?? item.Detalle_Cumplimiento ?? '',
+      estado: item.estado ?? item.Estado ?? '',
+      enviado: Boolean(item.enviado ?? item.Enviado ?? false)
+    }));
+  },
+
+  async updatePedidoSaanye(data: {
+    id?: number;
+    field: 'fecha_entrega' | 'detalle_cumplimiento' | 'enviado';
+    value: string | boolean;
+    prefijo: string;
+    numero: string;
+    fecha: string;
+  }): Promise<{ success: boolean; id?: number }> {
+    const formData = new FormData();
+    if (data.id) formData.append('id', data.id.toString());
+    formData.append('field', data.field);
+    formData.append('value', data.value.toString());
+    formData.append('prefijo', data.prefijo);
+    formData.append('numero', data.numero);
+    formData.append('fecha', data.fecha);
+
+    const response = await fetch(`${BASE_URL}/app/update_pedidos_saanye_entrega_detalle/`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to update pedido');
+    const result = await response.json();
+    return { success: true, id: result?.id };
   },
 
   async fetchCruceFacturas(): Promise<any[]> {
