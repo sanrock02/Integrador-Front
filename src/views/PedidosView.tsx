@@ -56,17 +56,20 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
     return selectedEstados.includes(getEstadoLabel(p));
   });
 
-  const buildCsv = (headers: string[], rows: string[][], delimiter = ';') => {
-    const escapeCell = (value: string) => {
-      const needsQuotes = value.includes('"') || value.includes('\n') || value.includes('\r') || value.includes(delimiter);
-      if (!needsQuotes) return value;
-      return `"${value.replace(/"/g, '""')}"`;
+  const visiblePedidos = filteredPedidos.slice(0, pageSize);
+
+  const buildCsv = (headers: string[], rows: Array<Array<string | number | boolean | null | undefined>>, delimiter = ';') => {
+    const escapeCell = (value: string | number | boolean | null | undefined) => {
+      const text = String(value ?? '');
+      const needsQuotes = text.includes('"') || text.includes('\n') || text.includes('\r') || text.includes(delimiter);
+      if (!needsQuotes) return text;
+      return `"${text.replace(/"/g, '""')}"`;
     };
 
     const lines = [
       `sep=${delimiter}`,
       headers.map(escapeCell).join(delimiter),
-      ...rows.map(row => row.map(cell => escapeCell(cell ?? '')).join(delimiter))
+      ...rows.map(row => row.map(cell => escapeCell(cell)).join(delimiter))
     ];
 
     return `\ufeff${lines.join('\n')}`;
@@ -103,7 +106,7 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
       'Enviado'
     ];
 
-    const rows = filteredPedidos.map((p, index) => ([
+    const rows = visiblePedidos.map((p, index) => ([
       String(index + 1),
       p.fecha ?? '',
       p.bodega ?? '',
@@ -281,7 +284,7 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
             </tr>
           </thead>
           <tbody className="text-sm">
-            {filteredPedidos.slice(0, pageSize).map((p, i) => (
+    {visiblePedidos.map((p, i) => (
               <tr key={`${p.prefijo}-${p.numero}-${p.fecha}-${i}`} className={cn("border-b transition-colors", isDarkMode ? "border-slate-700 hover:bg-slate-700/50" : "border-slate-100 hover:bg-slate-50")}>
                 <td className={cn("p-4 text-slate-400 font-mono text-xs")}>{i + 1}</td>
                 <td className={cn("p-4", isDarkMode ? "text-slate-400" : "text-slate-600")}>{p.fecha}</td>
