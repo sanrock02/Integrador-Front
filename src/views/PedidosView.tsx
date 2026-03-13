@@ -25,6 +25,29 @@ const getEstadoColor = (pedido: Pedido) => {
 export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProps) => {
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState<string>('');
+  const [pageSize, setPageSize] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredPedidos = pedidos.filter(p => {
+    if (!searchTerm.trim()) return true;
+    const hay = [
+      p.fecha,
+      p.bodega,
+      p.prefijo,
+      p.numero,
+      p.cliente,
+      p.usuario_pedido,
+      p.picking,
+      p.venta,
+      p.empaque,
+      p.fecha_entrega,
+      p.cumplimiento,
+      p.detalle_cumplimiento,
+      p.estado,
+      p.enviado ? 'si' : 'no'
+    ].join(' ').toLowerCase();
+    return hay.includes(searchTerm.toLowerCase());
+  });
 
   const beginEdit = (pedido: Pedido, field: 'fecha_entrega' | 'detalle_cumplimiento') => {
     const key = `${pedido.prefijo}-${pedido.numero}-${pedido.fecha}-${field}`;
@@ -93,7 +116,40 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
 
   return (
     <div className="space-y-6">
-      <h2 className={cn("text-2xl font-bold", isDarkMode ? "text-slate-100" : "text-slate-800")}>Pedidos Saanye</h2>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <h2 className={cn("text-2xl font-bold", isDarkMode ? "text-slate-100" : "text-slate-800")}>Pedidos Saanye</h2>
+        <div className={cn("rounded-2xl shadow-sm border p-3 flex flex-col md:flex-row md:items-center gap-4 transition-colors", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}>
+          <div className="flex-1 md:max-w-sm">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar..."
+              className={cn("w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] focus:border-transparent outline-none transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500" : "bg-slate-50 border-slate-200 text-slate-900")}
+            />
+          </div>
+          <div className={cn("flex items-center gap-2 text-xs font-bold", isDarkMode ? "text-slate-500" : "text-slate-500")}>
+            <span>Mostrar</span>
+            <select 
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className={cn("border rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-[#0078D4] transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-300" : "bg-white border-slate-200 text-slate-700")}
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={300}>300</option>
+              <option value={500}>500</option>
+              <option value={1500}>1500</option>
+            </select>
+            <span>registros</span>
+          </div>
+          <div className={cn("text-xs font-bold uppercase tracking-widest", isDarkMode ? "text-slate-600" : "text-slate-400")}>
+            {filteredPedidos.length} resultados
+          </div>
+        </div>
+      </div>
       <div className={cn("rounded-2xl shadow-sm border overflow-hidden transition-colors", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}>
         <table className="w-full border-collapse">
           <thead>
@@ -116,7 +172,7 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
             </tr>
           </thead>
           <tbody className="text-sm">
-            {pedidos.map((p, i) => (
+            {filteredPedidos.slice(0, pageSize).map((p, i) => (
               <tr key={`${p.prefijo}-${p.numero}-${p.fecha}-${i}`} className={cn("border-b transition-colors", isDarkMode ? "border-slate-700 hover:bg-slate-700/50" : "border-slate-100 hover:bg-slate-50")}>
                 <td className={cn("p-4 text-slate-400 font-mono text-xs")}>{i + 1}</td>
                 <td className={cn("p-4", isDarkMode ? "text-slate-400" : "text-slate-600")}>{p.fecha}</td>
@@ -191,7 +247,7 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
                 </td>
               </tr>
             ))}
-            {pedidos.length === 0 && (
+            {filteredPedidos.length === 0 && (
               <tr>
                 <td colSpan={15} className={cn("p-10 text-center text-sm", isDarkMode ? "text-slate-500" : "text-slate-500")}>
                   No se encontraron pedidos.
