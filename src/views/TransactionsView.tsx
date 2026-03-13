@@ -352,37 +352,74 @@ export const TransactionsView = ({
                           <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('fecha', e.target.value)} />
                         </div>
                       </th>
-                      <th className="p-4 text-left min-w-[300px] border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>Descripción</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('descripcion', e.target.value)} />
-                        </div>
-                      </th>
-                      <th className="p-4 text-left min-w-[150px] border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>Valor</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('valor', e.target.value)} />
-                        </div>
-                      </th>
-                      <th className="p-4 text-left border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>Des.Usuario</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('desc_usuario', e.target.value)} />
-                        </div>
-                      </th>
-                      <th className="p-4 text-left border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>#ZH</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Numero', e.target.value)} />
-                        </div>
-                      </th>
-                      <th className="p-4 text-left min-w-[200px] border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>NombreZH</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Nombre', e.target.value)} />
-                        </div>
-                      </th>
-                      <th className="p-4 text-center">Opcione</th>
+                      {activeTab === 'Revision ZH' ? (
+                        <>
+                          <th className="p-4 text-left min-w-[200px] border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>Tipo</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('descripcion', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-left border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>#ZH</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Numero', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-left min-w-[150px] border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>Nit</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Nit', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-left min-w-[200px] border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>Cliente</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Nombre', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-left min-w-[150px] border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>Valor</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('valor', e.target.value)} />
+                            </div>
+                          </th>
+                        </>
+                      ) : (
+                        <>
+                          <th className="p-4 text-left min-w-[300px] border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>Descripcion</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('descripcion', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-left min-w-[150px] border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>Valor</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('valor', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-left border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>Des.Usuario</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('desc_usuario', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-left border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>#ZH</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Numero', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-left min-w-[200px] border-r border-white/10">
+                            <div className="flex flex-col gap-2">
+                              <span>NombreZH</span>
+                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Nombre', e.target.value)} />
+                            </div>
+                          </th>
+                          <th className="p-4 text-center">Opcione</th>
+                        </>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="text-sm">
@@ -398,53 +435,75 @@ export const TransactionsView = ({
                         >
                           <td className="p-4 text-slate-400 font-mono text-xs">{index + 1}</td>
                           <td className={cn("p-4 font-bold", isDarkMode ? "text-slate-300" : "text-slate-700")}>{item.fecha}</td>
-                          <td className={cn("p-4 font-medium", isDarkMode ? "text-slate-400" : "text-slate-600")}>{item.descripcion}</td>
-                          <td className={cn(
-                            "p-4 font-mono font-bold text-right",
-                            item.valor < 0 ? (isDarkMode ? "text-red-400" :"text-red-500") : "text-emerald-600"
-                          )}>
-                            {formatCurrency(item.valor)}
-                          </td>
-                          <td className="p-4 text-slate-500">
-                            <EditableCell 
-                              id={item.id} 
-                              initialValue={item.desc_usuario} 
-                              isDarkMode={isDarkMode}
-                              onSave={(val) => {
-                                setTransactions(prev => prev.map(t => t.id === item.id ? { ...t, desc_usuario: val } : t));
-                              }}
-                            />
-                          </td>
-                          <td className={cn(
-                            "p-4 font-bold",
-                            item.Numero === 0 ? (isDarkMode ? "text-red-400" :"text-red-500") : (isDarkMode ? "text-blue-300" :"text-blue-500")
-                          )}>
-                            {item.Numero === 0 ? 'XXXX' : `${item.Prefijo}-${item.Numero}`}
-                          </td>
-                          <td className={cn(
-                            "p-4 font-bold",
-                            item.Nombre === 0 ? (isDarkMode ? "text-red-400" :"text-red-500") : (isDarkMode ? "text-slate-300" : "text-slate-700")
-                          )}>
-                            {item.Nombre === 0 ? 'XXXX' : item.Nombre}
-                          </td>
-                          <td className="p-4 text-center">
-                            {item.link_soporte ? (
-                              <a 
-                                href={`/media/${item.link_soporte}`} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="p-2 bg-[#0078D4] text-white rounded-lg hover:bg-[#005a9e] transition-all shadow-sm inline-flex items-center justify-center hover:scale-110 active:scale-95"
-                              >
-                                <FileText size={16} />
-                              </a>
-                            ) : item.Numero !== 0 ? (
-                              <button className={cn("p-2 rounded-lg transition-all shadow-sm inline-flex items-center justify-center", isDarkMode ? "bg-slate-700 text-slate-500 hover:bg-blue-900/30 hover:text-blue-400" : "bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-600")}>
-                                <Download size={16} />
-                              </button>
-                            ) : (
-                              <span className="text-slate-300">-</span>
-                            )}
-                          </td>
+                          {activeTab === 'Revision ZH' ? (
+                            <>
+                              <td className={cn("p-4 font-medium", isDarkMode ? "text-slate-400" : "text-slate-600")}>{item.descripcion}</td>
+                              <td className={cn(
+                                "p-4 font-bold",
+                                item.Numero === 0 ? (isDarkMode ? "text-red-400" : "text-red-500") : (isDarkMode ? "text-blue-300" : "text-blue-500")
+                              )}>
+                                {item.Numero === 0 ? 'XXXX' : `${item.Prefijo}-${item.Numero}`}
+                              </td>
+                              <td className={cn("p-4 font-medium", isDarkMode ? "text-slate-300" : "text-slate-700")}>{item.Nit}</td>
+                              <td className={cn("p-4 font-medium", isDarkMode ? "text-slate-300" : "text-slate-700")}>{item.Nombre}</td>
+                              <td className={cn(
+                                "p-4 font-mono font-bold text-right",
+                                item.valor < 0 ? (isDarkMode ? "text-red-400" : "text-red-500") : "text-emerald-600"
+                              )}>
+                                {formatCurrency(item.valor)}
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className={cn("p-4 font-medium", isDarkMode ? "text-slate-400" : "text-slate-600")}>{item.descripcion}</td>
+                              <td className={cn(
+                                "p-4 font-mono font-bold text-right",
+                                item.valor < 0 ? (isDarkMode ? "text-red-400" : "text-red-500") : "text-emerald-600"
+                              )}>
+                                {formatCurrency(item.valor)}
+                              </td>
+                              <td className="p-4 text-slate-500">
+                                <EditableCell 
+                                  id={item.id} 
+                                  initialValue={item.desc_usuario} 
+                                  isDarkMode={isDarkMode}
+                                  onSave={(val) => {
+                                    setTransactions(prev => prev.map(t => t.id === item.id ? { ...t, desc_usuario: val } : t));
+                                  }}
+                                />
+                              </td>
+                              <td className={cn(
+                                "p-4 font-bold",
+                                item.Numero === 0 ? (isDarkMode ? "text-red-400" : "text-red-500") : (isDarkMode ? "text-blue-300" : "text-blue-500")
+                              )}>
+                                {item.Numero === 0 ? 'XXXX' : `${item.Prefijo}-${item.Numero}`}
+                              </td>
+                              <td className={cn(
+                                "p-4 font-bold",
+                                item.Nombre === 0 ? (isDarkMode ? "text-red-400" : "text-red-500") : (isDarkMode ? "text-slate-300" : "text-slate-700")
+                              )}>
+                                {item.Nombre === 0 ? 'XXXX' : item.Nombre}
+                              </td>
+                              <td className="p-4 text-center">
+                                {item.link_soporte ? (
+                                  <a 
+                                    href={`/media/${item.link_soporte}`} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="p-2 bg-[#0078D4] text-white rounded-lg hover:bg-[#005a9e] transition-all shadow-sm inline-flex items-center justify-center hover:scale-110 active:scale-95"
+                                  >
+                                    <FileText size={16} />
+                                  </a>
+                                ) : item.Numero !== 0 ? (
+                                  <button className={cn("p-2 rounded-lg transition-all shadow-sm inline-flex items-center justify-center", isDarkMode ? "bg-slate-700 text-slate-500 hover:bg-blue-900/30 hover:text-blue-400" : "bg-slate-100 text-slate-400 hover:bg-blue-50 hover:text-blue-600")}> 
+                                    <Download size={16} />
+                                  </button>
+                                ) : (
+                                  <span className="text-slate-300">-</span>
+                                )}
+                              </td>
+                            </>
+                          )}
                         </motion.tr>
                       ))}
                     </AnimatePresence>

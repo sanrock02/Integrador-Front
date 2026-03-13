@@ -58,7 +58,9 @@ export default function App() {
   const loadTransactions = async () => {
     setIsLoading(true);
     try {
-      const data = await apiService.fetchTransactions(selectedBank, year);
+      const data = activeTab === 'Revision ZH'
+        ? await apiService.fetchTransactionsReverso(selectedBank, year)
+        : await apiService.fetchTransactions(selectedBank, year);
       setTransactions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error loading transactions:", error);
@@ -106,7 +108,9 @@ export default function App() {
                    selectedBank.accountNumber === '010-561639-01' ? 'dibaby' :
                    selectedBank.accountNumber === '010-000034-12' ? 'adtienda3412' :
                    selectedBank.accountNumber === '001-000235-25' ? 'adtienda3525' :
-                   selectedBank.accountNumber === '101-126122-24' ? 'nuevafama' : 'saanye';
+                   selectedBank.accountNumber === '101-126122-24' ? 'nuevafama' :
+                   selectedBank.accountNumber === '010-561646-81' ? 'muyalamoda' : 'saanye';
+
 
       const success = await apiService.saveConsignment({
         almacen: slug,
@@ -279,8 +283,7 @@ export default function App() {
                 <DashboardView 
                   isDarkMode={isDarkMode}
                   bankAccounts={BANK_ACCOUNTS}
-                  onBankSelect={handleBankSelect}
-                />
+                  onBankSelect={handleBankSelect} selectedBank={undefined} dashboardSummary={undefined} isDashboardLoading={false} dashboardUpdatedAt={undefined}                />
               )}
               {currentView === 'access-panel' && (
                 <AccessPanelView 

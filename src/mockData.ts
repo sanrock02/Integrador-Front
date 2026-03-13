@@ -8,9 +8,10 @@ export const BANK_ACCOUNTS: BankAccount[] = [
   { id: '5', accountNumber: '010-000034-12', name: 'Banco Adtienda 3412', hasZH: true },
   { id: '6', accountNumber: '001-000235-25', name: 'Banco Adtienda 3525', hasZH: true },
   { id: '7', accountNumber: '101-126122-24', name: 'Banco NuevaFama', hasZH: true },
-  { id: '8', accountNumber: 'felipe', name: 'Banco Felipe', hasZH: false },
-  { id: '9', accountNumber: 'alonso', name: 'Banco Alonso', hasZH: false },
-  { id: '10', accountNumber: 'adtienda8389', name: 'Banco Adtienda 8389', hasZH: false },
+  { id: '8', accountNumber: '010-561646-81', name: 'Banco Muyalamoda', hasZH: true },
+  { id: '9', accountNumber: 'felipe', name: 'Banco Felipe', hasZH: false },
+  { id: '10', accountNumber: 'alonso', name: 'Banco Alonso', hasZH: false },
+  { id: '11', accountNumber: 'adtienda8389', name: 'Banco Adtienda 8389', hasZH: false },
 ];
 
 export const MOCK_CONSIGNMENTS: Consignment[] = [

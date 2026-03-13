@@ -18,6 +18,7 @@ export const apiService = {
       '010-000034-12': 'adtienda3412',
       '001-000235-25': 'adtienda3525',
       '101-126122-24': 'nuevafama',
+      '010-561646-81': 'muyalamoda',
       'felipe': 'felipe',
       'alonso': 'alonso',
       'adtienda8389': 'adtienda8389'
@@ -34,6 +35,47 @@ export const apiService = {
     return Array.isArray(data.Registros_banco) ? data.Registros_banco : [];
   },
 
+  async fetchTransactionsReverso(bank: BankAccount, year: string): Promise<BankTransaction[]> {
+    const bankSlugs: Record<string, string> = {
+      '101-126848-02': 'saanye',
+      '603-801700-82': 'gloristy',
+      '101-153111-37': 'gloristy',
+      '603-801699-70': 'aristiduque',
+      '010-561639-01': 'dibaby',
+      '010-000034-12': 'adtienda3412',
+      '001-000235-25': 'adtienda3525',
+      '101-126122-24': 'nuevafama',
+      '010-561646-81': 'muyalamoda',
+      'felipe': 'felipe',
+      'alonso': 'alonso',
+      'adtienda8389': 'adtienda8389'
+    };
+
+    const slug = bankSlugs[bank.accountNumber] || bank.accountNumber.toLowerCase();
+    const response = await fetch(`${BASE_URL}/app/list_bancos_reverso/${year}/${slug}`, {
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('Failed to fetch transactions reverso');
+    const data = await response.json();
+    const rows = Array.isArray(data.Registros_ZH) ? data.Registros_ZH : [];
+    return rows.map((item: any, index: number) => ({
+      id: Number(item.id) || index + 1,
+      fecha: item.Fecha ?? item.fecha ?? '',
+      documento: item.Documento ?? item.documento ?? '',
+      sucursal: item.Sucursal ?? item.sucursal ?? '',
+      descripcion: item.Tipo ?? item.descripcion ?? '',
+      referencia: item.Referencia ?? item.referencia ?? '',
+      valor: Number(item.Valor ?? item.valor ?? 0),
+      desc_usuario: item.desc_usuario ?? '',
+      Numero: item.Numero ?? item.numero ?? 0,
+      Prefijo: item.Prefijo ?? item.prefijo ?? '',
+      Nit: item.Nit ?? item.nit ?? 0,
+      Nombre: item.Nombre ?? item.nombre ?? '',
+      link_soporte: item.link_soporte ?? null,
+      cuenta_Django: item.cuenta_Django ?? bank.accountNumber
+    }));
+  },
+
   
   async fetchConsignments(bank: BankAccount, year: string): Promise<Consignment[]> {
     const bankSlugs: Record<string, string> = {
@@ -43,7 +85,8 @@ export const apiService = {
       '010-561639-01': 'dibaby',
       '010-000034-12': 'adtienda3412',
       '001-000235-25': 'adtienda3525',
-      '101-126122-24': 'nuevafama'
+      '101-126122-24': 'nuevafama',
+      '010-561646-81': 'muyalamoda'
     };
 
     const slug = bankSlugs[bank.accountNumber] || 'saanye';
