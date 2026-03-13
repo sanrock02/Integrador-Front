@@ -377,7 +377,7 @@ export default function App() {
           </div>
           <div className="flex items-center gap-6">
             <span>© 2026 all rights reserved</span>
-            <span>Desarrollado por Santiago Echavarría</span>
+            <span>Powered by Santiago Echavarría</span>
           </div>
         </footer>
       </div>
