@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { 
   Search, 
   Download, 
@@ -7,7 +7,9 @@ import {
   Loader2, 
   X, 
   Copy, 
-  ArrowUpDown 
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../utils/cn';
@@ -76,6 +78,51 @@ export const TransactionsView = ({
   isSavingConsignment
 }: TransactionsViewProps) => {
   const [isConsignmentModalOpen, setIsConsignmentModalOpen] = useState(false);
+  const [fechaSort, setFechaSort] = useState<'asc' | 'desc' | null>(null);
+
+  const parseDateValue = (value?: string | null) => {
+    if (!value) return Number.NaN;
+    const direct = Date.parse(value);
+    if (!Number.isNaN(direct)) return direct;
+    const match = value.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if (!match) return Number.NaN;
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const yearRaw = match[3];
+    const year = yearRaw.length === 2 ? 2000 + Number(yearRaw) : Number(yearRaw);
+    const parsed = new Date(year, month - 1, day).getTime();
+    return Number.isNaN(parsed) ? Number.NaN : parsed;
+  };
+
+  const toggleFechaSort = () => {
+    setFechaSort(prev => (prev === 'desc' ? 'asc' : prev === 'asc' ? null : 'desc'));
+  };
+
+  const sortedConsignments = useMemo(() => {
+    if (!fechaSort) return filteredConsignments;
+    const dir = fechaSort === 'asc' ? 1 : -1;
+    return [...filteredConsignments].sort((a, b) => {
+      const aTime = parseDateValue(a.fecha);
+      const bTime = parseDateValue(b.fecha);
+      if (Number.isNaN(aTime) && Number.isNaN(bTime)) return 0;
+      if (Number.isNaN(aTime)) return 1;
+      if (Number.isNaN(bTime)) return -1;
+      return (aTime - bTime) * dir;
+    });
+  }, [filteredConsignments, fechaSort]);
+
+  const sortedData = useMemo(() => {
+    if (!fechaSort) return filteredData;
+    const dir = fechaSort === 'asc' ? 1 : -1;
+    return [...filteredData].sort((a, b) => {
+      const aTime = parseDateValue(a.fecha);
+      const bTime = parseDateValue(b.fecha);
+      if (Number.isNaN(aTime) && Number.isNaN(bTime)) return 0;
+      if (Number.isNaN(aTime)) return 1;
+      if (Number.isNaN(bTime)) return -1;
+      return (aTime - bTime) * dir;
+    });
+  }, [filteredData, fechaSort]);
 
   const buildCsv = (headers: string[], rows: string[][], delimiter = ';') => {
     const escapeCell = (value: string) => {
@@ -262,7 +309,16 @@ export const TransactionsView = ({
                   <thead>
                     <tr className="data-table-header">
                       <th className="p-4 text-left w-12 border-r border-white/10">#</th>
-                      <th className="p-4 text-left border-r border-white/10">Fecha</th>
+                      <th className="p-4 text-left border-r border-white/10">
+                        <button
+                          type="button"
+                          onClick={toggleFechaSort}
+                          className="inline-flex items-center gap-1 font-bold hover:text-blue-500 transition-colors"
+                        >
+                          Fecha
+                          {fechaSort === 'asc' ? <ArrowUp size={12} /> : fechaSort === 'desc' ? <ArrowDown size={12} /> : <ArrowUpDown size={12} />}
+                        </button>
+                      </th>
                       <th className="p-4 text-left min-w-[200px] border-r border-white/10">Cliente</th>
                       <th className="p-4 text-left border-r border-white/10">Valor</th>
                       <th className="p-4 text-left border-r border-white/10">Des.Usuario</th>
@@ -275,7 +331,7 @@ export const TransactionsView = ({
                   </thead>
                   <tbody className="text-sm">
                     <AnimatePresence mode="popLayout">
-                      {filteredConsignments.map((item, index) => (
+                      {sortedConsignments.map((item, index) => (
                         <motion.tr 
                           key={item.id}
                           initial={{ opacity: 0, y: 10 }}
@@ -348,7 +404,14 @@ export const TransactionsView = ({
                       <th className="p-4 text-left w-12 border-r border-white/10">#</th>
                       <th className="p-4 text-left min-w-[120px] border-r border-white/10">
                         <div className="flex flex-col gap-2">
-                          <span className="flex items-center gap-1">Fecha <ArrowUpDown size={12} /></span>
+                          <button
+                            type="button"
+                            onClick={toggleFechaSort}
+                            className="flex items-center gap-1 font-bold hover:text-blue-500 transition-colors text-left"
+                          >
+                            Fecha
+                            {fechaSort === 'asc' ? <ArrowUp size={12} /> : fechaSort === 'desc' ? <ArrowDown size={12} /> : <ArrowUpDown size={12} />}
+                          </button>
                           <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('fecha', e.target.value)} />
                         </div>
                       </th>
@@ -424,7 +487,7 @@ export const TransactionsView = ({
                   </thead>
                   <tbody className="text-sm">
                     <AnimatePresence mode="popLayout">
-                      {filteredData.slice(0, pageSize).map((item, index) => (
+                      {sortedData.slice(0, pageSize).map((item, index) => (
                         <motion.tr 
                           key={`${selectedBank.id}-${item.id}`}
                           initial={{ opacity: 0, y: 10 }}
