@@ -145,6 +145,39 @@ export const apiService = {
     return result.success;
   },
 
+  async uploadProveedorFile(data: {
+    file: File;
+    id: number;
+    prefijo: string;
+    numero: string | number;
+    nit: string | number;
+    nombre: string | number;
+    almacen: string;
+  }): Promise<{ success: boolean; path?: string }> {
+    const formData = new FormData();
+    formData.append('file', data.file);
+    formData.append('idint', data.id.toString());
+    formData.append('prefijo', String(data.prefijo));
+    formData.append('numero', String(data.numero));
+    formData.append('nit', String(data.nit ?? ''));
+    formData.append('nombre', String(data.nombre ?? ''));
+    formData.append('almacen', data.almacen);
+
+    const response = await fetch(`${BASE_URL}/app/upload_bank_document_proveedor/`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': getCsrfToken(),
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to upload proveedor file');
+    const result = await response.json();
+    return { success: true, path: result?.path };
+  },
+
   async updateDescription(id: number, value: string, isProvider: boolean = false): Promise<boolean> {
     const url = isProvider ? `${BASE_URL}/app/update_desc_usuario_proveedor/` : `${BASE_URL}/app/update_desc_usuario/`;
     const formData = new FormData();

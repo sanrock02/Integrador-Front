@@ -25,6 +25,7 @@ export interface Consignment {
   Proveedor: string | number;
   Numero: string | number;
   Prefijo: string;
+  Nit?: string | number;
   Nombre: string | number;
   link_soporte: string | null;
   almacen_Django: string;

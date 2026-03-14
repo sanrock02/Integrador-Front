@@ -37,6 +37,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('101-126848-02');
   const [searchTerm, setSearchTerm] = useState('');
   const [columnFilters, setColumnFilters] = useState<Partial<Record<keyof BankTransaction, string>>>({});
+  const [consignmentFilters, setConsignmentFilters] = useState<Partial<Record<keyof Consignment, string>>>({});
   const [pageSize, setPageSize] = useState(10);
   const [year, setYear] = useState(new Date().getFullYear().toString());
   
@@ -164,14 +165,23 @@ export default function App() {
 
   const filteredConsignments = useMemo(() => {
     return (consignments || []).filter(item => {
-      return Object.values(item).some(val => 
+      const globalMatch = Object.values(item).some(val => 
         String(val ?? '').toLowerCase().includes(searchTerm.toLowerCase())
       );
+      const columnMatch = Object.entries(consignmentFilters).every(([key, value]) => {
+        if (!value) return true;
+        const itemValue = item[key as keyof Consignment];
+        return String(itemValue ?? '').toLowerCase().includes(String(value).toLowerCase());
+      });
+      return globalMatch && columnMatch;
     });
-  }, [consignments, searchTerm]);
+  }, [consignments, searchTerm, consignmentFilters]);
 
   const handleColumnFilter = (key: keyof BankTransaction, value: string) => {
     setColumnFilters(prev => ({ ...prev, [key]: value }));
+  };
+  const handleConsignmentColumnFilter = (key: keyof Consignment, value: string) => {
+    setConsignmentFilters(prev => ({ ...prev, [key]: value }));
   };
 
 
@@ -314,6 +324,7 @@ export default function App() {
                   setPageSize={setPageSize}
                   handleDeleteConsignment={handleDeleteConsignment}
                   handleColumnFilter={handleColumnFilter}
+                  handleConsignmentColumnFilter={handleConsignmentColumnFilter}
                   setConsignments={setConsignments}
                   setTransactions={setTransactions}
                   consignmentForm={consignmentForm}

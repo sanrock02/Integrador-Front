@@ -6,7 +6,8 @@ import {
   FileText, 
   Loader2, 
   X, 
-  Copy, 
+  Copy,
+  Upload,
   ArrowUpDown,
   ArrowUp,
   ArrowDown
@@ -42,6 +43,7 @@ interface TransactionsViewProps {
   setPageSize: (size: number) => void;
   handleDeleteConsignment: (id: number) => void;
   handleColumnFilter: (column: keyof BankTransaction, value: string) => void;
+  handleConsignmentColumnFilter: (column: keyof Consignment, value: string) => void;
   setConsignments: React.Dispatch<React.SetStateAction<Consignment[]>>;
   setTransactions: React.Dispatch<React.SetStateAction<BankTransaction[]>>;
   consignmentForm: { fecha: string; cliente: string; proveedor: string; valor: string };
@@ -70,6 +72,7 @@ export const TransactionsView = ({
   setPageSize,
   handleDeleteConsignment,
   handleColumnFilter,
+  handleConsignmentColumnFilter,
   setConsignments,
   setTransactions,
   consignmentForm,
@@ -79,6 +82,7 @@ export const TransactionsView = ({
 }: TransactionsViewProps) => {
   const [isConsignmentModalOpen, setIsConsignmentModalOpen] = useState(false);
   const [fechaSort, setFechaSort] = useState<'asc' | 'desc' | null>(null);
+  const [isUploading, setIsUploading] = useState<number | null>(null);
 
   const parseDateValue = (value?: string | null) => {
     if (!value) return Number.NaN;
@@ -206,6 +210,29 @@ export const TransactionsView = ({
     downloadCsv(`transacciones-${safeBank}-${dateStamp}.csv`, csv);
   };
 
+  const handleUploadProveedorFile = async (item: Consignment, file: File) => {
+    setIsUploading(item.id);
+    try {
+      const result = await apiService.uploadProveedorFile({
+        file,
+        id: item.id,
+        prefijo: item.Prefijo ?? '',
+        numero: item.Numero ?? '',
+        nit: item.Nit ?? 0,
+        nombre: item.Nombre ?? '',
+        almacen: item.almacen_Django ?? ''
+      });
+      if (result.path) {
+        setConsignments(prev => prev.map(c => c.id === item.id ? { ...c, link_soporte: result.path } : c));
+      }
+    } catch (error) {
+      console.error('Error uploading proveedor file:', error);
+      alert('Error al subir archivo.');
+    } finally {
+      setIsUploading(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -319,13 +346,48 @@ export const TransactionsView = ({
                           {fechaSort === 'asc' ? <ArrowUp size={12} /> : fechaSort === 'desc' ? <ArrowDown size={12} /> : <ArrowUpDown size={12} />}
                         </button>
                       </th>
-                      <th className="p-4 text-left min-w-[200px] border-r border-white/10">Cliente</th>
-                      <th className="p-4 text-left border-r border-white/10">Valor</th>
-                      <th className="p-4 text-left border-r border-white/10">Des.Usuario</th>
-                      <th className="p-4 text-left border-r border-white/10">Proveedor</th>
-                      <th className="p-4 text-left border-r border-white/10">ProveedorZH</th>
-                      <th className="p-4 text-left border-r border-white/10">#ZH</th>
-                      <th className="p-4 text-left min-w-[200px] border-r border-white/10">NombreZH</th>
+                      <th className="p-4 text-left min-w-[200px] border-r border-white/10">
+                        <div className="flex flex-col gap-2">
+                          <span>Cliente</span>
+                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('nombre_cliente', e.target.value)} />
+                        </div>
+                      </th>
+                      <th className="p-4 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-2">
+                          <span>Valor</span>
+                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('valor', e.target.value)} />
+                        </div>
+                      </th>
+                      <th className="p-4 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-2">
+                          <span>Des.Usuario</span>
+                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('desc_usuario', e.target.value)} />
+                        </div>
+                      </th>
+                      <th className="p-4 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-2">
+                          <span>Proveedor</span>
+                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('nombre_proveedor', e.target.value)} />
+                        </div>
+                      </th>
+                      <th className="p-4 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-2">
+                          <span>ProveedorZH</span>
+                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('Proveedor', e.target.value)} />
+                        </div>
+                      </th>
+                      <th className="p-4 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-2">
+                          <span>#ZH</span>
+                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('Numero', e.target.value)} />
+                        </div>
+                      </th>
+                      <th className="p-4 text-left min-w-[200px] border-r border-white/10">
+                        <div className="flex flex-col gap-2">
+                          <span>NombreZH</span>
+                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('Nombre', e.target.value)} />
+                        </div>
+                      </th>
                       <th className="p-4 text-center">Opcion</th>
                     </tr>
                   </thead>
@@ -379,16 +441,43 @@ export const TransactionsView = ({
                           </td>
                           <td className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2">
-                              <button 
-                                onClick={() => handleDeleteConsignment(item.id)}
-                                className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-sm"
-                              >
-                                <X size={14} />
-                              </button>
-                              {item.Numero !== 0 && (
-                                <button className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all shadow-sm">
-                                  <Copy size={14} />
-                                </button>
+                              {item.link_soporte ? (
+                                <a 
+                                  href={`/media/${item.link_soporte}`} 
+                                  target="_blank" 
+                                  rel="noreferrer"
+                                  className="p-2 bg-[#0078D4] text-white rounded-lg hover:bg-[#005a9e] transition-all shadow-sm inline-flex items-center justify-center hover:scale-110 active:scale-95"
+                                >
+                                  <FileText size={14} />
+                                </a>
+                              ) : (
+                                <>
+                                  <button 
+                                    onClick={() => handleDeleteConsignment(item.id)}
+                                    className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-sm"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                  {item.Numero !== 0 && (
+                                    <>
+                                      <label className={cn("p-2 rounded-lg transition-all shadow-sm inline-flex items-center justify-center cursor-pointer", isDarkMode ? "bg-slate-700 text-slate-300 hover:bg-blue-900/30 hover:text-blue-400" : "bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600")}>
+                                        <Upload size={14} />
+                                        <input
+                                          type="file"
+                                          className="hidden"
+                                          onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) handleUploadProveedorFile(item, file);
+                                            e.currentTarget.value = '';
+                                          }}
+                                        />
+                                      </label>
+                                      {isUploading === item.id && (
+                                        <Loader2 size={14} className="animate-spin text-blue-500" />
+                                      )}
+                                    </>
+                                  )}
+                                </>
                               )}
                             </div>
                           </td>
