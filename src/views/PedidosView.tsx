@@ -29,6 +29,22 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEstados, setSelectedEstados] = useState<string[]>([]);
+  const [columnFilters, setColumnFilters] = useState<Partial<Record<
+    | 'fecha'
+    | 'bodega'
+    | 'prefijo'
+    | 'numero'
+    | 'cliente'
+    | 'usuario_pedido'
+    | 'picking'
+    | 'venta'
+    | 'empaque'
+    | 'fecha_entrega'
+    | 'cumplimiento'
+    | 'detalle_cumplimiento'
+    | 'estado'
+    | 'enviado'
+  , string>>>({});
 
   const availableEstados = Array.from(new Set(pedidos.map(p => getEstadoLabel(p)))).sort();
 
@@ -54,6 +70,43 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
   }).filter(p => {
     if (selectedEstados.length === 0) return true;
     return selectedEstados.includes(getEstadoLabel(p));
+  }).filter(p => {
+    return Object.entries(columnFilters).every(([key, value]) => {
+      if (!value) return true;
+      const needle = value.toLowerCase();
+      switch (key) {
+        case 'fecha':
+          return String(p.fecha ?? '').toLowerCase().includes(needle);
+        case 'bodega':
+          return String(p.bodega ?? '').toLowerCase().includes(needle);
+        case 'prefijo':
+          return String(p.prefijo ?? '').toLowerCase().includes(needle);
+        case 'numero':
+          return String(p.numero ?? '').toLowerCase().includes(needle);
+        case 'cliente':
+          return String(p.cliente ?? '').toLowerCase().includes(needle);
+        case 'usuario_pedido':
+          return String(p.usuario_pedido ?? '').toLowerCase().includes(needle);
+        case 'picking':
+          return String(p.picking ?? '').toLowerCase().includes(needle);
+        case 'venta':
+          return String(p.venta ?? '').toLowerCase().includes(needle);
+        case 'empaque':
+          return String(p.empaque ?? '').toLowerCase().includes(needle);
+        case 'fecha_entrega':
+          return String(p.fecha_entrega ?? '').toLowerCase().includes(needle);
+        case 'cumplimiento':
+          return String(p.cumplimiento ?? '').toLowerCase().includes(needle);
+        case 'detalle_cumplimiento':
+          return String(p.detalle_cumplimiento ?? '').toLowerCase().includes(needle);
+        case 'estado':
+          return String(getEstadoLabel(p) ?? '').toLowerCase().includes(needle);
+        case 'enviado':
+          return (p.enviado ? 'si' : 'no').includes(needle);
+        default:
+          return true;
+      }
+    });
   });
 
   const visiblePedidos = filteredPedidos.slice(0, pageSize);
@@ -266,21 +319,119 @@ export const PedidosView = ({ isDarkMode, pedidos, setPedidos }: PedidosViewProp
         <table className="w-full border-collapse">
           <thead>
             <tr className="data-table-header">
-              <th className="p-4 text-left">#</th>
-              <th className="p-4 text-left">Fecha</th>
-              <th className="p-4 text-left">Bodega</th>
-              <th className="p-4 text-left">Prefijo</th>
-              <th className="p-4 text-left">Numero</th>
-              <th className="p-4 text-left">Cliente</th>
-              <th className="p-4 text-left">Estado</th>
-              <th className="p-4 text-left">Usuario</th>
-              <th className="p-4 text-left">Picking</th>
-              <th className="p-4 text-left">Venta</th>
-              <th className="p-4 text-left">Empaque</th>
-              <th className="p-4 text-left">F.Entrega</th>
-              <th className="p-4 text-left">%Cumplimiento</th>
-              <th className="p-4 text-left">Det.Cumpl</th>
-              <th className="p-4 text-left">Enviado</th>
+              <th className="p-2 text-left w-12 border-r border-white/10">#</th>
+              <th className="p-2 text-left min-w-[120px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Fecha"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, fecha: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[120px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Bodega"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, bodega: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[90px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Prefijo"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, prefijo: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[90px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Numero"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, numero: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[180px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Cliente"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, cliente: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[120px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Estado"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, estado: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[140px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Usuario"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, usuario_pedido: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[110px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Picking"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, picking: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[110px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Venta"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, venta: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[110px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Empaque"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, empaque: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[120px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="F.Entrega"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, fecha_entrega: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[140px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="%Cumpl"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, cumplimiento: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[160px] border-r border-white/10">
+                <input
+                  type="text"
+                  placeholder="Det.Cumpl"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, detalle_cumplimiento: e.target.value }))}
+                />
+              </th>
+              <th className="p-2 text-left min-w-[90px]">
+                <input
+                  type="text"
+                  placeholder="Enviado"
+                  className="search-input h-7 py-1 text-xs"
+                  onChange={(e) => setColumnFilters(prev => ({ ...prev, enviado: e.target.value }))}
+                />
+              </th>
             </tr>
           </thead>
           <tbody className="text-sm">

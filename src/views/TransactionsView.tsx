@@ -22,6 +22,7 @@ import {
   Consignment 
 } from '../types';
 import { EditableCell } from '../components/EditableCell';
+import { apiService } from '../services/api';
 
 interface TransactionsViewProps {
   isDarkMode: boolean;
@@ -284,7 +285,7 @@ export const TransactionsView = ({
       <div className="flex flex-col">
         <div className="flex-1 min-w-0">
           <div className={cn("rounded-2xl shadow-sm border overflow-hidden transition-colors", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}>
-            <div className={cn("flex flex-col md:flex-row md:items-center justify-between p-4 border-b gap-4 transition-colors", isDarkMode ? "border-slate-700" : "border-slate-100")}>
+            <div className={cn("flex flex-col md:flex-row md:items-center p-2 border-b gap-3 transition-colors", isDarkMode ? "border-slate-700" : "border-slate-100")}>
               <div className="flex flex-wrap gap-1">
                 {tabs.map((tab) => (
                   <button
@@ -301,25 +302,52 @@ export const TransactionsView = ({
                   </button>
                 ))}
               </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto md:ml-auto">
+                {activeTab === 'Proveedores' && (
+                  <button
+                    onClick={() => setIsConsignmentModalOpen(true)}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"
+                  >
+                    <FileText size={16} />
+                    Nueva consignacion
+                  </button>
+                )}
+                {activeTab === 'Proveedores' && (
+                  <div className={cn("hidden md:block w-px h-8", isDarkMode ? "bg-slate-700" : "bg-slate-200")} />
+                )}
+                <div className={cn("flex items-center gap-2 text-xs font-bold", isDarkMode ? "text-slate-500" : "text-slate-500")}>
+                  <span>Mostrar</span>
+                  <select 
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className={cn("border rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-[#0078D4] transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-300" : "bg-white border-slate-200 text-slate-700")}
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                    <option value={300}>300</option>
+                    <option value={500}>500</option>
+                    <option value={1500}>1500</option>
 
-              {activeTab === 'Proveedores' && (
-                <button
-                  onClick={() => setIsConsignmentModalOpen(true)}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"
-                >
-                  <FileText size={16} />
-                  Nueva consignacion
-                </button>
-              )}
-              <div className="relative max-w-xs w-full">
-                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Buscar..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={cn("w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] focus:border-transparent outline-none transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500" : "bg-slate-50 border-slate-200 text-slate-900")}
-                />
+                  </select>
+                  <span>registros</span>
+                </div>
+                <div className={cn("hidden md:block w-px h-8", isDarkMode ? "bg-slate-700" : "bg-slate-200")} />
+                <div className={cn("text-xs font-bold uppercase tracking-widest", isDarkMode ? "text-slate-600" : "text-slate-400")}>
+                  {(activeTab === 'Proveedores' ? filteredConsignments.length : filteredData.length)} resultados encontrados
+                </div>
+                <div className={cn("hidden md:block w-px h-8", isDarkMode ? "bg-slate-700" : "bg-slate-200")} />
+                <div className="relative max-w-xs w-full md:w-64 md:ml-4">
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input 
+                    type="text" 
+                    placeholder="Buscar..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={cn("w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-[#0078D4] focus:border-transparent outline-none transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-200 placeholder:text-slate-500" : "bg-slate-50 border-slate-200 text-slate-900")}
+                  />
+                </div>
               </div>
             </div>
 
@@ -335,65 +363,61 @@ export const TransactionsView = ({
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="data-table-header">
-                      <th className="p-4 text-left w-12 border-r border-white/10">#</th>
-                      <th className="p-4 text-left border-r border-white/10">
-                        <button
-                          type="button"
-                          onClick={toggleFechaSort}
-                          className="inline-flex items-center gap-1 font-bold hover:text-blue-500 transition-colors"
-                        >
-                          Fecha
-                          {fechaSort === 'asc' ? <ArrowUp size={12} /> : fechaSort === 'desc' ? <ArrowDown size={12} /> : <ArrowUpDown size={12} />}
-                        </button>
-                      </th>
-                      <th className="p-4 text-left min-w-[200px] border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>Cliente</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('nombre_cliente', e.target.value)} />
+                      <th className="p-2 text-left w-12 border-r border-white/10">#</th>
+                      <th className="p-2 text-left border-r border-white/10">
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={toggleFechaSort}
+                            className="inline-flex items-center gap-1 font-bold hover:text-blue-500 transition-colors"
+                            title="Ordenar por fecha"
+                          >
+                            {fechaSort === 'asc' ? <ArrowUp size={12} /> : fechaSort === 'desc' ? <ArrowDown size={12} /> : <ArrowUpDown size={12} />}
+                          </button>
+                          <input type="text" placeholder="Fecha" className="search-input h-7 py-1 text-xs" onChange={(e) => handleConsignmentColumnFilter('fecha', e.target.value)} />
                         </div>
                       </th>
-                      <th className="p-4 text-left border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>Valor</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('valor', e.target.value)} />
+                      <th className="p-2 text-left min-w-[200px] border-r border-white/10">
+                        <div className="flex flex-col gap-1">
+                          <input type="text" placeholder="Cliente" className="search-input h-7 py-1 text-xs" onChange={(e) => handleConsignmentColumnFilter('nombre_cliente', e.target.value)} />
                         </div>
                       </th>
-                      <th className="p-4 text-left border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>Des.Usuario</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('desc_usuario', e.target.value)} />
+                      <th className="p-2 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-1">
+                          <input type="text" placeholder="Valor" className="search-input h-7 py-1 text-xs" onChange={(e) => handleConsignmentColumnFilter('valor', e.target.value)} />
                         </div>
                       </th>
-                      <th className="p-4 text-left border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>Proveedor</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('nombre_proveedor', e.target.value)} />
+                      <th className="p-2 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-1">
+                          <input type="text" placeholder="Des.Usuario" className="search-input h-7 py-1 text-xs" onChange={(e) => handleConsignmentColumnFilter('desc_usuario', e.target.value)} />
                         </div>
                       </th>
-                      <th className="p-4 text-left border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>ProveedorZH</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('Proveedor', e.target.value)} />
+                      <th className="p-2 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-1">
+                          <input type="text" placeholder="Proveedor" className="search-input h-7 py-1 text-xs" onChange={(e) => handleConsignmentColumnFilter('nombre_proveedor', e.target.value)} />
                         </div>
                       </th>
-                      <th className="p-4 text-left border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>#ZH</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('Numero', e.target.value)} />
+                      <th className="p-2 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-1">
+                          <input type="text" placeholder="ProveedorZH" className="search-input h-7 py-1 text-xs" onChange={(e) => handleConsignmentColumnFilter('Proveedor', e.target.value)} />
                         </div>
                       </th>
-                      <th className="p-4 text-left min-w-[200px] border-r border-white/10">
-                        <div className="flex flex-col gap-2">
-                          <span>NombreZH</span>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleConsignmentColumnFilter('Nombre', e.target.value)} />
+                      <th className="p-2 text-left border-r border-white/10">
+                        <div className="flex flex-col gap-1">
+                          <input type="text" placeholder="#ZH" className="search-input h-7 py-1 text-xs" onChange={(e) => handleConsignmentColumnFilter('Numero', e.target.value)} />
                         </div>
                       </th>
-                      <th className="p-4 text-center">Opcion</th>
+                      <th className="p-2 text-left min-w-[200px] border-r border-white/10">
+                        <div className="flex flex-col gap-1">
+                          <input type="text" placeholder="NombreZH" className="search-input h-7 py-1 text-xs" onChange={(e) => handleConsignmentColumnFilter('Nombre', e.target.value)} />
+                        </div>
+                      </th>
+                      <th className="p-2 text-center">Opcion</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
                     <AnimatePresence mode="popLayout">
-                      {sortedConsignments.map((item, index) => (
+                      {sortedConsignments.slice(0, pageSize).map((item, index) => (
                         <motion.tr 
                           key={item.id}
                           initial={{ opacity: 0, y: 10 }}
@@ -490,86 +514,76 @@ export const TransactionsView = ({
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="data-table-header">
-                      <th className="p-4 text-left w-12 border-r border-white/10">#</th>
-                      <th className="p-4 text-left min-w-[120px] border-r border-white/10">
-                        <div className="flex flex-col gap-2">
+                      <th className="p-2 text-left w-12 border-r border-white/10">#</th>
+                      <th className="p-2 text-left min-w-[120px] border-r border-white/10">
+                        <div className="flex items-center gap-1">
                           <button
                             type="button"
                             onClick={toggleFechaSort}
-                            className="flex items-center gap-1 font-bold hover:text-blue-500 transition-colors text-left"
+                            className="inline-flex items-center gap-1 font-bold hover:text-blue-500 transition-colors"
+                            title="Ordenar por fecha"
                           >
-                            Fecha
                             {fechaSort === 'asc' ? <ArrowUp size={12} /> : fechaSort === 'desc' ? <ArrowDown size={12} /> : <ArrowUpDown size={12} />}
                           </button>
-                          <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('fecha', e.target.value)} />
+                          <input type="text" placeholder="Fecha" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('fecha', e.target.value)} />
                         </div>
                       </th>
                       {activeTab === 'Revision ZH' ? (
                         <>
-                          <th className="p-4 text-left min-w-[200px] border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>Tipo</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('descripcion', e.target.value)} />
+                          <th className="p-2 text-left min-w-[200px] border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="Tipo" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('descripcion', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-left border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>#ZH</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Numero', e.target.value)} />
+                          <th className="p-2 text-left border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="#ZH" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('Numero', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-left min-w-[150px] border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>Nit</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Nit', e.target.value)} />
+                          <th className="p-2 text-left min-w-[150px] border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="Nit" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('Nit', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-left min-w-[200px] border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>Cliente</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Nombre', e.target.value)} />
+                          <th className="p-2 text-left min-w-[200px] border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="Cliente" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('Nombre', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-left min-w-[150px] border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>Valor</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('valor', e.target.value)} />
+                          <th className="p-2 text-left min-w-[150px] border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="Valor" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('valor', e.target.value)} />
                             </div>
                           </th>
                         </>
                       ) : (
                         <>
-                          <th className="p-4 text-left min-w-[300px] border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>Descripcion</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('descripcion', e.target.value)} />
+                          <th className="p-2 text-left min-w-[300px] border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="Descripcion" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('descripcion', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-left min-w-[150px] border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>Valor</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('valor', e.target.value)} />
+                          <th className="p-2 text-left min-w-[150px] border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="Valor" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('valor', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-left border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>Des.Usuario</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('desc_usuario', e.target.value)} />
+                          <th className="p-2 text-left border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="Des.Usuario" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('desc_usuario', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-left border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>#ZH</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Numero', e.target.value)} />
+                          <th className="p-2 text-left border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="#ZH" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('Numero', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-left min-w-[200px] border-r border-white/10">
-                            <div className="flex flex-col gap-2">
-                              <span>NombreZH</span>
-                              <input type="text" placeholder="Filtrar..." className="search-input" onChange={(e) => handleColumnFilter('Nombre', e.target.value)} />
+                          <th className="p-2 text-left min-w-[200px] border-r border-white/10">
+                            <div className="flex flex-col gap-1">
+                              <input type="text" placeholder="NombreZH" className="search-input h-7 py-1 text-xs" onChange={(e) => handleColumnFilter('Nombre', e.target.value)} />
                             </div>
                           </th>
-                          <th className="p-4 text-center">Opcione</th>
+                          <th className="p-2 text-center">Opcione</th>
                         </>
                       )}
                     </tr>
@@ -673,30 +687,6 @@ export const TransactionsView = ({
               )}
             </div>
             
-            <div className={cn("p-4 border-t flex items-center justify-between transition-colors", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}>
-              <div className={cn("flex items-center gap-2 text-xs font-bold", isDarkMode ? "text-slate-500" : "text-slate-500")}>
-                <span>Mostrar</span>
-                <select 
-                  value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
-                  className={cn("border rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-[#0078D4] transition-all", isDarkMode ? "bg-slate-700 border-slate-600 text-slate-300" : "bg-white border-slate-200 text-slate-700")}
-                >
-                  <option value={10}>10</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                  <option value={300}>300</option>
-                  <option value={500}>500</option>
-                  <option value={1500}>1500</option>
-
-                </select>
-                <span>registros</span>
-              </div>
-              
-              <div className={cn("text-xs font-bold uppercase tracking-widest", isDarkMode ? "text-slate-600" : "text-slate-400")}>
-                {(activeTab === 'Proveedores' ? filteredConsignments.length : filteredData.length)} resultados encontrados
-              </div>
-            </div>
           </div>
         </div>
       </div>
